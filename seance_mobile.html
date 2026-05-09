@@ -4,220 +4,136 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>ECD</title>
 <style>
-:root {
-  --green: #4aff4a;
-  --green-dim: #2a8a2a;
-  --green-dark: #1a4a1a;
-  --green-faint: #0f2a0f;
-  --bg: #0a0a0a;
-  --bg2: #111;
-  --border: #1a1a1a;
-  --sat: env(safe-area-inset-top, 0px);
-  --sab: env(safe-area-inset-bottom, 0px);
-  --sal: env(safe-area-inset-left, 0px);
-  --sar: env(safe-area-inset-right, 0px);
-}
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body {
   width: 100%; height: 100%;
-  background: var(--bg);
+  background: #0a0a0a;
   font-family: 'Courier New', monospace;
   overflow: hidden;
-  position: fixed;
 }
 
 #device {
-  position: fixed; inset: 0;
-  padding-top: var(--sat);
-  padding-bottom: var(--sab);
-  padding-left: var(--sal);
-  padding-right: var(--sar);
+  width: 100vw; height: 100vh;
   display: flex; flex-direction: column;
-  background: var(--bg);
 }
 
-/* ── HEADER ── */
 .dev-header {
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  padding: 10px 16px 9px;
+  background: #111;
+  padding: 0 16px;
   display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid #1a1a1a;
   flex-shrink: 0;
+  height: 44px;
 }
-.header-left { display: flex; gap: 7px; align-items: center; }
+.header-left { display: flex; gap: 8px; align-items: center; }
 .live-dot {
   width: 7px; height: 7px; border-radius: 50%;
-  background: #1a3a1a; box-shadow: 0 0 5px #0f0;
+  background: #1a3a1a; box-shadow: 0 0 4px #0f0;
+  flex-shrink: 0;
 }
-.dev-label { font-size: 9px; color: var(--green-dark); letter-spacing: 1.5px; }
-.film-title {
-  font-size: 11px; color: var(--green-dim); letter-spacing: 0.8px;
-  max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  text-align: center; flex: 1; padding: 0 8px;
+.dev-label { font-size: 11px; color: #1a4a1a; letter-spacing: 1px; }
+.dev-center {
+  font-size: 12px; color: #1a3a1a; letter-spacing: 0.8px;
+  flex: 1; text-align: center;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  padding: 0 12px;
 }
-.header-right { display: flex; align-items: center; }
-#timer-start-btn {
-  font-size: 10px; color: var(--green-dim);
-  border: 0.5px solid var(--green-dark); border-radius: 3px;
-  background: none; padding: 4px 10px; letter-spacing: 1px;
-  cursor: pointer; font-family: 'Courier New', monospace;
-  min-width: 56px; text-align: center;
+.header-right {
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
 }
-#timer-start-btn.running { color: var(--green); border-color: var(--green-dim); }
 
-/* ── DISPLAY ── */
+#offset-input {
+  width: 52px;
+  background: transparent; border: none;
+  border-bottom: 1px solid #1a4a1a; outline: none;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: #2a7a2a; text-align: center; padding: 4px 2px;
+  -webkit-appearance: none;
+}
+#offset-input:focus { color: #4aff4a; border-bottom-color: #4aff4a; }
+
+#timer-btn {
+  font-size: 12px; color: #2a8a2a;
+  padding: 6px 10px;
+  border: 0.5px solid #1a4a1a;
+  border-radius: 3px; background: none;
+  letter-spacing: 0.5px;
+  min-width: 72px; text-align: center;
+  cursor: pointer;
+  -webkit-user-select: none;
+}
+#timer-btn.running { color: #4aff4a; border-color: #2a8a2a; }
+
 #cc-display {
   flex: 1;
+  padding: 16px 20px;
   display: flex; flex-direction: column;
-  justify-content: center;
-  padding: 24px 20px;
-  gap: 8px;
+  justify-content: center; gap: 8px;
   overflow: hidden;
 }
+
 .cc-line {
-  font-size: clamp(16px, 4.5vw, 24px);
+  font-size: clamp(15px, 3vw, 22px);
   line-height: 1.5;
   min-height: 1.5em;
-  letter-spacing: 0.2px;
-  transition: color 0.5s;
-  word-break: break-all;
-}
-#line0 { color: #1a4a1a; }
-#line1 { color: #2a7a2a; }
-#line2 { color: var(--green); text-shadow: 0 0 12px rgba(74,255,74,0.2); }
-
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.05} }
-.cursor { animation: blink 0.7s infinite; }
-
-/* ── TIME PICKER ── */
-#picker-area {
-  background: var(--bg2);
-  border-top: 1px solid var(--border);
-  padding: 12px 20px 14px;
-  display: flex; align-items: center; justify-content: center;
-  gap: 0;
-  flex-shrink: 0;
+  letter-spacing: 0.3px;
 }
 
-.picker-col {
-  display: flex; flex-direction: column; align-items: center;
-  position: relative;
-  width: 56px;
-}
-.picker-label {
-  font-size: 7px; color: var(--green-faint); letter-spacing: 1.5px;
-  margin-bottom: 4px;
-}
-.picker-scroll {
-  height: 96px;
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  position: relative;
-}
-.picker-scroll::-webkit-scrollbar { display: none; }
-.picker-item {
-  height: 32px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px; color: var(--green-faint);
-  scroll-snap-align: center;
-  cursor: pointer;
-  transition: color 0.15s;
-  letter-spacing: 0;
-}
-.picker-item.selected { color: var(--green); }
-.picker-item.near { color: var(--green-dim); }
-
-/* highlight line */
-.picker-col::after {
-  content: '';
-  position: absolute;
-  left: 4px; right: 4px;
-  top: calc(50% - 1px + 18px);
-  height: 1px;
-  background: var(--green-dark);
-  pointer-events: none;
-}
-.picker-col::before {
-  content: '';
-  position: absolute;
-  left: 4px; right: 4px;
-  top: calc(50% - 17px + 18px);
-  height: 1px;
-  background: var(--green-dark);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.picker-sep {
-  font-size: 20px; color: var(--green-dark);
-  margin: 0 2px; padding-top: 20px;
-  align-self: center;
-}
-
-/* ── FOOTER ── */
 .dev-footer {
-  background: var(--bg);
-  border-top: 1px solid #0f0f0f;
-  padding: 4px 20px 6px;
+  background: #0a0a0a;
+  padding: 5px 16px 10px;
   display: flex; justify-content: space-between;
+  align-items: center;
   flex-shrink: 0;
+  border-top: 1px solid #0f0f0f;
 }
-.dev-footer span { font-size: 7px; color: var(--green-faint); letter-spacing: 0.5px; }
-#next-cue-display { color: #0f3a0f; }
+.dev-footer span { font-size: 9px; color: #0f2a0f; letter-spacing: 0.5px; }
 
-/* ── LOADING ── */
 #loading {
-  position: fixed; inset: 0;
-  background: var(--bg);
+  position: fixed; inset: 0; background: #0a0a0a;
   display: flex; align-items: center; justify-content: center;
-  z-index: 100;
+  z-index: 300;
 }
-#loading span { font-size: 9px; color: var(--green-dark); letter-spacing: 3px; }
+#loading span { font-size: 10px; color: #1a4a1a; letter-spacing: 2px; }
 #loading.hidden { display: none; }
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.1} }
+.typing-cursor { animation: blink 0.8s infinite; }
 </style>
 </head>
 <body>
 
-<div id="loading"><span id="loading-text">LOADING</span></div>
+<div id="loading">
+  <span id="loading-text">LOADING</span>
+</div>
 
-<div id="device">
+<div id="device" style="display:none;">
   <div class="dev-header">
     <div class="header-left">
       <div class="live-dot"></div>
       <span class="dev-label">CC LIVE</span>
     </div>
-    <div class="film-title" id="film-label">CAPTION DEVICE</div>
+    <span class="dev-center" id="film-label">CAPTION DEVICE</span>
     <div class="header-right">
-      <button id="timer-start-btn" onclick="toggleTimer()">START</button>
+      <input id="offset-input" type="text" value="0:00" inputmode="decimal" placeholder="0:00" />
+      <div id="timer-btn" onclick="toggleTimer()">[ RUN ]</div>
     </div>
   </div>
 
   <div id="cc-display">
-    <div class="cc-line" id="line0"></div>
-    <div class="cc-line" id="line1"></div>
-    <div class="cc-line" id="line2"></div>
-  </div>
-
-  <div id="picker-area">
-    <div class="picker-col">
-      <div class="picker-label">MIN</div>
-      <div class="picker-scroll" id="min-scroll"></div>
-    </div>
-    <div class="picker-sep">:</div>
-    <div class="picker-col">
-      <div class="picker-label">SEC</div>
-      <div class="picker-scroll" id="sec-scroll"></div>
-    </div>
+    <div class="cc-line" id="line0" style="color:#2a5a2a;"></div>
+    <div class="cc-line" id="line1" style="color:#3a8a3a;"></div>
+    <div class="cc-line" id="line2" style="color:#4aff4a;text-shadow:0 0 10px rgba(74,255,74,0.2);"></div>
   </div>
 
   <div class="dev-footer">
-    <span>ECD · SÉANCE</span>
-    <span id="next-cue-display">—</span>
+    <span>ECD · SEANCE</span>
+    <span id="next-cue">NEXT --:--</span>
     <span>EIA-608</span>
   </div>
 </div>
@@ -229,127 +145,73 @@ const lineEls = [
   document.getElementById('line1'),
   document.getElementById('line2'),
 ];
-const COLORS = ['#1a4a1a', '#2a7a2a', '#4aff4a'];
-const SHADOWS = ['none', 'none', '0 0 12px rgba(74,255,74,0.2)'];
+const COLORS = ['#2a5a2a', '#3a8a3a', '#4aff4a'];
+const SHADOWS = ['none', 'none', '0 0 10px rgba(74,255,74,0.2)'];
 
 let movieConfig = null, pendingCues = [];
 let running = false, offsetSecs = 0, timerStart = null, timerInterval = null;
 const lineBuf = ['', '', ''];
 
-// ── PICKERS ──
-const ITEM_H = 32;
-const PADDING_ITEMS = 1; // items before/after to allow snap
-
-function buildPicker(scrollEl, count, padStart = 0) {
-  // padding top
-  for (let i = 0; i < PADDING_ITEMS; i++) {
-    const pad = document.createElement('div');
-    pad.style.height = ITEM_H + 'px';
-    scrollEl.appendChild(pad);
-  }
-  for (let i = padStart; i < count; i++) {
-    const item = document.createElement('div');
-    item.className = 'picker-item';
-    item.textContent = String(i).padStart(2, '0');
-    item.dataset.value = i;
-    scrollEl.appendChild(item);
-  }
-  // padding bottom
-  for (let i = 0; i < PADDING_ITEMS; i++) {
-    const pad = document.createElement('div');
-    pad.style.height = ITEM_H + 'px';
-    scrollEl.appendChild(pad);
+async function init() {
+  const params = new URLSearchParams(location.search);
+  const film = params.get('film');
+  if (!film) { document.getElementById('loading-text').textContent = 'NO FILM'; return; }
+  try {
+    const res = await fetch(REPO + '/films/' + film + '.json');
+    if (!res.ok) throw new Error();
+    movieConfig = await res.json();
+    pendingCues = [...(movieConfig.eiri||[])].sort((a,b) => a.at - b.at);
+    document.getElementById('film-label').textContent = movieConfig.title || 'CAPTION DEVICE';
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('device').style.display = 'flex';
+    updateDisplay();
+  } catch(e) {
+    document.getElementById('loading-text').textContent = 'NOT FOUND';
   }
 }
 
-function getPickerValue(scrollEl) {
-  const scrollTop = scrollEl.scrollTop;
-  const idx = Math.round(scrollTop / ITEM_H);
-  return idx;
+function parseTime(s) {
+  const p = s.trim().split(':');
+  return p.length === 2 ? (parseInt(p[0])||0)*60 + (parseInt(p[1])||0) : parseInt(s)||0;
 }
-
-function setPickerValue(scrollEl, val) {
-  scrollEl.scrollTop = val * ITEM_H;
-  updatePickerColors(scrollEl);
-}
-
-function updatePickerColors(scrollEl) {
-  const current = Math.round(scrollEl.scrollTop / ITEM_H);
-  const items = scrollEl.querySelectorAll('.picker-item');
-  items.forEach((item, i) => {
-    const dist = Math.abs(i - current);
-    if (dist === 0) item.className = 'picker-item selected';
-    else if (dist === 1) item.className = 'picker-item near';
-    else item.className = 'picker-item';
-  });
-}
-
-buildPicker(document.getElementById('min-scroll'), 240); // 0–239 min
-buildPicker(document.getElementById('sec-scroll'), 60);  // 0–59 sec
-
-['min-scroll', 'sec-scroll'].forEach(id => {
-  const el = document.getElementById(id);
-  el.addEventListener('scroll', () => {
-    updatePickerColors(el);
-    if (!running) {
-      const mins = getPickerValue(document.getElementById('min-scroll'));
-      const secs = getPickerValue(document.getElementById('sec-scroll'));
-      offsetSecs = mins * 60 + secs;
-      updateTimerDisplay();
-    }
-  }, { passive: true });
-  updatePickerColors(el);
-});
-
-// ── TIMER ──
 function formatTime(s) {
   s = Math.max(0, s);
-  return Math.floor(s / 60) + ':' + (Math.floor(s % 60) < 10 ? '0' : '') + Math.floor(s % 60);
+  return Math.floor(s/60) + ':' + (Math.floor(s%60) < 10 ? '0' : '') + Math.floor(s%60);
 }
 function currentSecs() {
   return running ? offsetSecs + (Date.now() - timerStart) / 1000 : offsetSecs;
 }
 
-function updateTimerDisplay() {
-  const t = currentSecs();
-  const btn = document.getElementById('timer-start-btn');
-  btn.textContent = running ? 'PAUSE' : 'START';
+function updateDisplay() {
+  const btn = document.getElementById('timer-btn');
+  const t = formatTime(currentSecs());
+  btn.textContent = running ? '[ ' + t + ' ]' : '[ RUN ]';
   btn.className = running ? 'running' : '';
-  if (running) {
-    // sync pickers to current time (no snap during playback)
-    const m = Math.floor(t / 60);
-    const s = Math.floor(t % 60);
-    document.getElementById('min-scroll').scrollTop = m * ITEM_H;
-    document.getElementById('sec-scroll').scrollTop = s * ITEM_H;
-    updatePickerColors(document.getElementById('min-scroll'));
-    updatePickerColors(document.getElementById('sec-scroll'));
-  }
   checkCues();
-  document.getElementById('next-cue-display').textContent = pendingCues[0] ? formatTime(pendingCues[0].at) : '—';
+  const next = pendingCues[0];
+  document.getElementById('next-cue').textContent = next ? 'NEXT ' + formatTime(next.at) : 'NEXT --:--';
 }
 
 function toggleTimer() {
   if (!running) {
-    const mins = getPickerValue(document.getElementById('min-scroll'));
-    const secs = getPickerValue(document.getElementById('sec-scroll'));
-    offsetSecs = mins * 60 + secs;
-    timerStart = Date.now();
-    running = true;
-    timerInterval = setInterval(updateTimerDisplay, 1000);
+    offsetSecs = parseTime(document.getElementById('offset-input').value);
+    timerStart = Date.now(); running = true;
+    timerInterval = setInterval(updateDisplay, 500);
   } else {
-    offsetSecs = currentSecs();
-    running = false;
+    offsetSecs = currentSecs(); running = false;
     clearInterval(timerInterval);
-    // snap pickers to current offset
-    const m = Math.floor(offsetSecs / 60);
-    const s = Math.floor(offsetSecs % 60);
-    setPickerValue(document.getElementById('min-scroll'), m);
-    setPickerValue(document.getElementById('sec-scroll'), s);
+    document.getElementById('offset-input').value = formatTime(offsetSecs);
   }
-  updateTimerDisplay();
+  updateDisplay();
 }
 
-// ── CUES ──
+const oi = document.getElementById('offset-input');
+oi.addEventListener('blur', () => {
+  offsetSecs = parseTime(oi.value);
+  oi.value = formatTime(offsetSecs);
+  updateDisplay();
+});
+
 function checkCues() {
   if (!pendingCues.length) return;
   const now = currentSecs();
@@ -360,10 +222,10 @@ function checkCues() {
 }
 
 function showCue(text) {
-  lineEls[2].innerHTML = '<span class="cursor">▋</span>';
-  lineEls[2].style.color = '#1a4a1a';
-  lineEls[2].style.textShadow = 'none';
+  lineEls[2].textContent = '|';
+  lineEls[2].className = 'cc-line typing-cursor';
   setTimeout(() => {
+    lineEls[2].className = 'cc-line';
     lineBuf.shift(); lineBuf.push(text);
     render();
   }, 500);
@@ -374,27 +236,8 @@ function render() {
     el.textContent = lineBuf[i] || '';
     el.style.color = COLORS[i];
     el.style.textShadow = SHADOWS[i];
+    el.className = 'cc-line';
   });
-}
-
-// ── INIT ──
-async function init() {
-  const params = new URLSearchParams(location.search);
-  const film = params.get('film');
-  if (!film) { document.getElementById('loading-text').textContent = 'NO FILM'; return; }
-  try {
-    const res = await fetch(REPO + '/films/' + film + '.json?t=' + Date.now());
-    if (!res.ok) throw new Error();
-    movieConfig = await res.json();
-    pendingCues = [...(movieConfig.eiri||[])].sort((a,b) => a.at - b.at);
-    // use English title if available, else Chinese
-    const title = movieConfig.title_en || movieConfig.title || 'CAPTION DEVICE';
-    document.getElementById('film-label').textContent = title.toUpperCase();
-    document.getElementById('loading').classList.add('hidden');
-    updateTimerDisplay();
-  } catch(e) {
-    document.getElementById('loading-text').textContent = 'NOT FOUND';
-  }
 }
 
 init();
