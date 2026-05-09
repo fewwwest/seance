@@ -483,6 +483,15 @@ function boot(autostart) {
   document.getElementById('btn-play').classList.add('paused');
   updateClock();
   if (autostart) startTimer();
+  // opening card: title, director, year
+  const openLines = [
+    movieConfig.title || '',
+    movieConfig.director || '',
+    movieConfig.year ? String(movieConfig.year) : '',
+  ].filter(Boolean);
+  if (openLines.length) {
+    setTimeout(() => showCueSequence(openLines), 300);
+  }
 }
 
 function startTimer() {
@@ -639,42 +648,45 @@ function checkCues() {
   const now = currentSecs();
   const due = pendingCues.filter(c => c.at <= now);
   if (!due.length) return;
-  // pop them all in order, but type one at a time
   const next = due[0];
   pendingCues = pendingCues.filter(x => x !== next);
-  showCue(next.line);
+  const lineArr = Array.isArray(next.line) ? next.line : [next.line];
+  showCueSequence(lineArr);
 }
 
-function showCue(text) {
-  // shift current bottom line up the stack and type new one into the bottom
+function showCueSequence(arr, idx = 0) {
+  if (idx >= arr.length) { typing = false; checkCues(); return; }
   typing = true;
-  // shift up: l3 -> l2, l2 -> l1
-  if (lines.length === 3) lines.shift();
-  lines.push(''); // new empty line at bottom
-  render();
+  showCueLine(arr[idx], () => {
+    const pause = 900 + arr[idx].length * 30;
+    setTimeout(() => showCueSequence(arr, idx + 1), pause);
+  });
+}
 
-  // type into bottom
+function showCueLine(text, onDone) {
+  if (lines.length === 3) lines.shift();
+  lines.push('');
+  render();
   let i = 0;
   const targetEl = lineEls[2];
   targetEl.classList.add('l3');
-
   function step() {
     if (i <= text.length) {
-      const partial = text.slice(0, i);
-      targetEl.innerHTML = escapeHTML(partial) + '<span class="caret"></span>';
+      targetEl.innerHTML = escapeHTML(text.slice(0, i)) + '<span class="caret"></span>';
       i++;
-      // typing speed: faster for long lines
-      const delay = 28 + Math.random() * 35;
-      setTimeout(step, delay);
+      setTimeout(step, 28 + Math.random() * 35);
     } else {
       targetEl.innerHTML = escapeHTML(text);
       lines[lines.length - 1] = text;
-      typing = false;
-      // immediately catch up if more cues are already due
-      checkCues();
+      if (onDone) onDone();
     }
   }
   step();
+}
+
+function showCue(text) {
+  const arr = Array.isArray(text) ? text : [text];
+  showCueSequence(arr);
 }
 
 function escapeHTML(s) {
