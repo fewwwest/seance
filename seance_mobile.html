@@ -53,7 +53,7 @@
      The illuminated DOT-MATRIX area inside is about 4.6 : 1. */
   :root {
     --device-w: min(98vmax, 1100px);
-    --device-h: calc(var(--device-w) / 4.2);
+    --device-h: calc(var(--device-w) / 3.2);
     --bezel: calc(var(--device-w) * 0.018);
     --screen-pad-x: calc(var(--device-w) * 0.022);
     --screen-pad-y: calc(var(--device-w) * 0.012);
@@ -208,11 +208,14 @@
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: space-evenly;
+    align-items: flex-start;
+    text-align: left;
     gap: calc(var(--device-w) * 0.004);
-    padding: calc(var(--screen-pad-y) * 0.6) var(--screen-pad-x) calc(var(--screen-pad-y) * 0.4);
+    padding: calc(var(--screen-pad-y) * 0.6) var(--screen-pad-x);
     overflow: hidden;
   }
+  .cc-line { width: 100%; }
   .cc-line {
     font-family: 'VT323','Courier New',monospace;
     font-size: calc(var(--device-w) * 0.038);
@@ -359,7 +362,7 @@
           <div class="right">
             <span class="clock-wrap">
               <span id="cc-clock" title="tap to set">00:00</span>
-              <input id="clock-input" type="text" inputmode="numeric" pattern="[0-9:]*" maxlength="7" style="display:none;" />
+              <input id="clock-input" type="text" inputmode="numeric" pattern="[0-9:]*" maxlength="7" placeholder="hmmss" style="display:none;" />
             </span>
             <span>EIA-608</span>
           </div>
@@ -373,11 +376,9 @@
 
         <div class="screen-foot">
           <div class="ctrls" id="ctrls-left">
-            <button class="btn" id="btn-back10" title="−10s">−10</button>
-            <button class="btn" id="btn-back1"  title="−1s">−1</button>
-            <button class="btn primary" id="btn-play" title="play / pause">⏸</button>
-            <button class="btn" id="btn-fwd1"  title="+1s">+1</button>
-            <button class="btn" id="btn-fwd10" title="+10s">+10</button>
+            <button class="btn" id="btn-back60" title="−1min">−1m</button>
+            <button class="btn primary" id="btn-play" title="play / pause">PAUSE</button>
+            <button class="btn" id="btn-fwd60" title="+1min">+1m</button>
           </div>
           <span class="mid" id="status-mid">STANDBY</span>
           <div class="ctrls" id="ctrls-right">
@@ -478,7 +479,7 @@ function boot(autostart) {
   dev.style.visibility = 'visible';
   wireControls();
   // pause-state visuals on boot
-  document.getElementById('btn-play').textContent = '▶';
+  document.getElementById('btn-play').textContent = 'PLAY';
   document.getElementById('btn-play').classList.add('paused');
   updateClock();
   if (autostart) startTimer();
@@ -489,7 +490,7 @@ function startTimer() {
   timerStart = Date.now();
   running = true;
   document.getElementById('status-mid').textContent = 'PLAYING';
-  document.getElementById('btn-play').textContent = '⏸';
+  document.getElementById('btn-play').textContent = 'PAUSE';
   document.getElementById('btn-play').classList.remove('paused');
   if (!timerInterval) timerInterval = setInterval(tick, 200);
   tick();
@@ -500,7 +501,7 @@ function pauseTimer() {
   offsetSecs = currentSecs();
   running = false;
   document.getElementById('status-mid').textContent = 'PAUSED';
-  document.getElementById('btn-play').textContent = '▶';
+  document.getElementById('btn-play').textContent = 'PLAY';
   document.getElementById('btn-play').classList.add('paused');
   tick();
 }
@@ -538,21 +539,28 @@ function rebuildPendingCues() {
 function parseTimeInput(s) {
   s = (s || '').trim();
   if (!s) return null;
-  // formats: SS, MM:SS, H:MM:SS
-  const parts = s.split(':').map(p => parseInt(p, 10));
-  if (parts.some(isNaN)) return null;
-  if (parts.length === 1) return parts[0];
-  if (parts.length === 2) return parts[0] * 60 + parts[1];
-  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
-  return null;
+  if (s.includes(':')) {
+    const parts = s.split(':').map(p => parseInt(p, 10));
+    if (parts.some(isNaN)) return null;
+    if (parts.length === 1) return parts[0];
+    if (parts.length === 2) return parts[0] * 60 + parts[1];
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    return null;
+  }
+  // pure-digit form, read from the right: SS, MM, HH...
+  // "12930" → 1:29:30, "930" → 9:30, "45" → 0:45
+  if (!/^\d+$/.test(s)) return null;
+  const ss = parseInt(s.slice(-2), 10) || 0;
+  const mm = parseInt(s.slice(-4, -2) || '0', 10) || 0;
+  const hh = parseInt(s.slice(0, -4) || '0', 10) || 0;
+  if (ss >= 60 || mm >= 60) return null;
+  return hh * 3600 + mm * 60 + ss;
 }
 
 function wireControls() {
   document.getElementById('btn-play').addEventListener('click', togglePlay);
-  document.getElementById('btn-back10').addEventListener('click', () => nudge(-10));
-  document.getElementById('btn-back1').addEventListener('click', () => nudge(-1));
-  document.getElementById('btn-fwd1').addEventListener('click', () => nudge(1));
-  document.getElementById('btn-fwd10').addEventListener('click', () => nudge(10));
+  document.getElementById('btn-back60').addEventListener('click', () => nudge(-60));
+  document.getElementById('btn-fwd60').addEventListener('click', () => nudge(60));
   document.getElementById('btn-set').addEventListener('click', openClockEdit);
   document.getElementById('cc-clock').addEventListener('click', openClockEdit);
 
@@ -575,7 +583,7 @@ function wireControls() {
 function openClockEdit() {
   const inp = document.getElementById('clock-input');
   const clk = document.getElementById('cc-clock');
-  inp.value = formatTime(currentSecs());
+  inp.value = formatTime(currentSecs()).replace(/:/g, '');
   clk.style.display = 'none';
   inp.style.display = 'inline-block';
   inp.focus();
