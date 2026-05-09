@@ -1,49 +1,18 @@
 {
-  "title": "闪灵",
+  "title": "The Shining",
+  "director": "Stanley Kubrick",
   "year": 1980,
-  "director": "斯坦利·库布里克",
   "duration": 144,
   "eiri": [
-    {
-      "at": 390,
-      "line": "面试那场戏，经理说了什么他都没真的在听。"
-    },
-    {
-      "at": 1260,
-      "line": "走廊开始了。"
-    },
-    {
-      "at": 2880,
-      "line": "摄影机贴着地板。"
-    },
-    {
-      "at": 4200,
-      "line": "237。"
-    },
-    {
-      "at": 4692,
-      "line": "它比所有的鬼都先到。"
-    },
-    {
-      "at": 5023,
-      "line": "Steadicam。"
-    },
-    {
-      "at": 5769,
-      "line": "她一个人。"
-    },
-    {
-      "at": 5783,
-      "line": "Road Runner。"
-    },
-    {
-      "at": 7527,
-      "line": "Penderecki的《De Natura Sonoris No.2》。没有词，是声音本身。"
-    },
-    {
-      "at": 7800,
-      "line": "1921年，他站在正中。"
-    }
-  ],
-  "title_en": "The Shining"
+    { "at": 390, "line": "The manager is talking. Jack isn't listening." },
+    { "at": 1260, "line": "The corridor starts here." },
+    { "at": 2880, "line": "Camera on the floor." },
+    { "at": 4200, "line": "237." },
+    { "at": 4692, "line": "This song arrives before everything else does." },
+    { "at": 5023, "line": "Steadicam." },
+    { "at": 5769, "line": "She's on her own." },
+    { "at": 5783, "line": "Road Runner." },
+    { "at": 7527, "line": ["Penderecki, De Natura Sonoris No.2.", "No words. The voices are the instrument."] },
+    { "at": 7800, "line": "1921. He's standing in the center." }
+  ]
 }
