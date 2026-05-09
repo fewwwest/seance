@@ -37,11 +37,9 @@
       radial-gradient(ellipse at 50% 50%, #0a0a0a 0%, #000 70%);
   }
 
-  /* On a real desktop (fine pointer + hover), skip the rotation and just
-     center horizontally. Phones — even if held in landscape — always
-     stay rotated, so the notch / dynamic island never sits on the
-     long edge of the device. The user holds the phone in portrait. */
-  @media (orientation: landscape) and (hover: hover) and (pointer: fine) {
+  /* Only rotate when actually held portrait. Anything in landscape
+     (phone, tablet, desktop) renders natively. */
+  @media (orientation: landscape), (hover: hover) and (pointer: fine) {
     #stage-rot {
       width: 100vw;
       height: 100vh;
@@ -54,11 +52,11 @@
      The OUTER chassis is roughly 5.2 : 1 (front face).
      The illuminated DOT-MATRIX area inside is about 4.6 : 1. */
   :root {
-    --device-w: min(94vmax, 920px);
+    --device-w: min(98vmax, 1100px);
     --device-h: calc(var(--device-w) / 4.2);
-    --bezel: calc(var(--device-w) * 0.022);
-    --screen-pad-x: calc(var(--device-w) * 0.028);
-    --screen-pad-y: calc(var(--device-w) * 0.014);
+    --bezel: calc(var(--device-w) * 0.018);
+    --screen-pad-x: calc(var(--device-w) * 0.022);
+    --screen-pad-y: calc(var(--device-w) * 0.012);
   }
 
   .device {
@@ -82,7 +80,7 @@
 
   /* tiny manufacturer mark engraved into chassis (left cap) */
   .chassis-cap {
-    width: calc(var(--device-w) * 0.07);
+    width: calc(var(--device-w) * 0.05);
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -217,13 +215,14 @@
   }
   .cc-line {
     font-family: 'VT323','Courier New',monospace;
-    font-size: calc(var(--device-w) * 0.044);
+    font-size: calc(var(--device-w) * 0.038);
     line-height: 1.1;
     min-height: 1.1em;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    letter-spacing: 0.02em;
+    /* allow wrap so long Chinese lines don't get clipped */
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
   .cc-line.l1 { color: #1e5a1e; }
   .cc-line.l2 { color: #2f9a2f; }
