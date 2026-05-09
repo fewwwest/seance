@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ECD</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body {
+  width: 100%; height: 100%;
+  background: #0a0a0a;
+  font-family: 'Courier New', monospace;
+  overflow: hidden;
+}
+
+/* portrait: show rotate hint */
+.rotate-hint {
+  display: none;
+  position: fixed; inset: 0;
+  background: #0a0a0a;
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px;
+  z-index: 200;
+}
+.rotate-hint span { font-size: 11px; color: rgba(42,122,42,0.6); letter-spacing: 2px; }
+.rotate-arrow { font-size: 32px; color: rgba(42,122,42,0.4); }
+
+@media (orientation: portrait) {
+  .rotate-hint { display: flex; }
+  #device { display: none; }
+}
+
+#device {
+  width: 100vw; height: 100vh;
+  display: flex; flex-direction: column;
+  background: #0a0a0a;
+}
+
+/* header */
+.dev-header {
+  background: #111;
+  padding: 4px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid #1a1a1a;
+  flex-shrink: 0;
+  height: 28px;
+}
+.header-left { display: flex; gap: 6px; align-items: center; }
+.live-dot { width: 5px; height: 5px; border-radius: 50%; background: #1a3a1a; box-shadow: 0 0 3px #0f0; }
+.dev-label { font-size: 8px; color: #1a4a1a; letter-spacing: 1px; }
+.dev-center { font-size: 8px; color: #1a3a1a; letter-spacing: 0.8px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.header-right { display: flex; align-items: center; gap: 10px; }
+
+#offset-input {
+  width: 36px; background: transparent; border: none;
+  border-bottom: 0.5px solid #1a4a1a; outline: none;
+  font-family: 'Courier New', monospace; font-size: 9px;
+  color: #2a7a2a; text-align: center; padding: 1px 0;
+}
+#offset-input:focus { color: #4aff4a; border-bottom-color: #4aff4a; }
+
+#timer-btn {
+  font-size: 9px; color: #2a8a2a; cursor: pointer;
+  padding: 2px 7px; border: 0.5px solid #1a4a1a;
+  border-radius: 3px; background: none; letter-spacing: 0.5px;
+  min-width: 48px; text-align: center;
+}
+#timer-btn.running { color: #4aff4a; border-color: #2a8a2a; }
+
+/* display - fills remaining height */
+#cc-display {
+  flex: 1;
+  padding: 0 16px;
+  display: flex; flex-direction: column;
+  justify-content: center; gap: 4px;
+  overflow: hidden;
+}
+
+.cc-line {
+  font-size: clamp(14px, 3.2vw, 22px);
+  line-height: 1.4;
+  min-height: 1.4em;
+  letter-spacing: 0.3px;
+  transition: color 0.4s;
+}
+
+/* footer */
+.dev-footer {
+  background: #0a0a0a;
+  padding: 3px 14px 6px;
+  display: flex; justify-content: space-between;
+  flex-shrink: 0;
+  border-top: 1px solid #111;
+}
+.dev-footer span { font-size: 7px; color: #0f2a0f; letter-spacing: 0.5px; }
+#next-cue { color: #0f3a0f; }
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.1} }
+.typing-cursor::after { content: '▋'; animation: blink 0.8s infinite; color: #2a6a2a; }
+</style>
+</head>
+<body>
+
+<div class="rotate-hint">
+  <div class="rotate-arrow">⟳</div>
+  <span>横屏使用</span>
+</div>
+
+<div id="device">
+  <div class="dev-header">
+    <div class="header-left">
+      <div class="live-dot"></div>
+      <span class="dev-label">CC LIVE</span>
+    </div>
+    <span class="dev-center" id="film-label">CAPTION DEVICE</span>
+    <div class="header-right">
+      <input id="offset-input" type="text" value="0:00" inputmode="text" />
+      <div id="timer-btn" onclick="toggleTimer()">▶ 0:00</div>
+    </div>
+  </div>
+
+  <div id="cc-display">
+    <div class="cc-line" id="line0" style="color:#2a5a2a;"></div>
+    <div class="cc-line" id="line1" style="color:#3a8a3a;"></div>
+    <div class="cc-line" id="line2" style="color:#4aff4a;text-shadow:0 0 10px rgba(74,255,74,0.25);"></div>
+  </div>
+
+  <div class="dev-footer">
+    <span>ECD · SÉANCE</span>
+    <span id="next-cue">—</span>
+    <span>EIA-608</span>
+  </div>
+</div>
+
+<script>
+const lineEls = [
+  document.getElementById('line0'),
+  document.getElementById('line1'),
+  document.getElementById('line2'),
+];
+const COLORS = ['#2a5a2a', '#3a8a3a', '#4aff4a'];
+const SHADOWS = ['none', 'none', '0 0 10px rgba(74,255,74,0.25)'];
+
+let movieConfig = null;
+let pendingCues = [];
+let running = false, offsetSecs = 0, timerStart = null, timerInterval = null;
+const lineBuf = ['', '', ''];
+
+// load config from URL
+function getConfigFromURL() {
+  const params = new URLSearchParams(location.search);
+  const c = params.get('c');
+  if (c) {
+    try { return JSON.parse(decodeURIComponent(c)); } catch(e) {}
+  }
+  return null;
+}
+
+movieConfig = getConfigFromURL() || (() => {
+  try { return JSON.parse(localStorage.getItem('seance_config') || 'null'); } catch(e) { return null; }
+})();
+
+if (movieConfig) {
+  pendingCues = [...(movieConfig.eiri||[])].sort((a,b) => a.at - b.at);
+  document.getElementById('film-label').textContent = movieConfig.title || 'CAPTION DEVICE';
+}
+
+// timer
+function parseTime(s) {
+  const p = s.trim().split(':');
+  return p.length === 2 ? (parseInt(p[0])||0)*60 + (parseInt(p[1])||0) : parseInt(s)||0;
+}
+function formatTime(s) {
+  s = Math.max(0, s);
+  return Math.floor(s/60) + ':' + (Math.floor(s%60) < 10 ? '0' : '') + Math.floor(s%60);
+}
+function currentSecs() {
+  return running ? offsetSecs + (Date.now() - timerStart) / 1000 : offsetSecs;
+}
+function updateDisplay() {
+  const btn = document.getElementById('timer-btn');
+  btn.textContent = (running ? '⏸ ' : '▶ ') + formatTime(currentSecs());
+  btn.className = running ? 'running' : '';
+  checkCues();
+  updateNextCue();
+}
+function toggleTimer() {
+  if (!running) {
+    offsetSecs = parseTime(document.getElementById('offset-input').value);
+    timerStart = Date.now(); running = true;
+    timerInterval = setInterval(updateDisplay, 500);
+  } else {
+    offsetSecs = currentSecs(); running = false;
+    clearInterval(timerInterval);
+    document.getElementById('offset-input').value = formatTime(offsetSecs);
+  }
+  updateDisplay();
+}
+
+const oi = document.getElementById('offset-input');
+oi.addEventListener('blur', () => { offsetSecs = parseTime(oi.value); oi.value = formatTime(offsetSecs); updateDisplay(); });
+
+// cues
+function checkCues() {
+  if (!pendingCues.length) return;
+  const now = currentSecs();
+  const due = pendingCues.filter(c => c.at <= now);
+  due.forEach(c => {
+    pendingCues = pendingCues.filter(x => x !== c);
+    showCue(c.line);
+  });
+}
+function updateNextCue() {
+  document.getElementById('next-cue').textContent = pendingCues[0] ? formatTime(pendingCues[0].at) : '—';
+}
+
+function showCue(text) {
+  // typing cursor flash
+  lineEls[2].classList.add('typing-cursor');
+  lineEls[2].textContent = '';
+  setTimeout(() => {
+    lineEls[2].classList.remove('typing-cursor');
+    pushLine(text);
+    saveCueToLog(text);
+  }, 500);
+}
+
+function pushLine(text) {
+  lineBuf.shift(); lineBuf.push(text);
+  render();
+}
+
+function render() {
+  lineEls.forEach((el, i) => {
+    el.textContent = lineBuf[i] || '';
+    el.style.color = COLORS[i];
+    el.style.textShadow = SHADOWS[i];
+    el.className = 'cc-line';
+  });
+}
+
+function saveCueToLog(text) {
+  const ts = formatTime(currentSecs());
+  try {
+    const log = JSON.parse(localStorage.getItem('seance_log') || '[]');
+    log.push({ role: 'eiri', content: text, ts, passive: true });
+    localStorage.setItem('seance_log', JSON.stringify(log));
+  } catch(e) {}
+}
+
+updateDisplay();
+</script>
+</body>
+</html>
