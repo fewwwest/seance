@@ -4,240 +4,684 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>ECD</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ECD · SEANCE</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body {
-  width: 100%; height: 100%;
-  background: #0a0a0a;
-  font-family: 'Courier New', monospace;
-  overflow: hidden;
-}
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-#device {
-  width: 100vw; height: 100vh;
-  display: flex; flex-direction: column;
-}
+  html, body {
+    width: 100vw; height: 100vh;
+    background: #000;
+    overflow: hidden;
+    font-family: 'VT323', 'Courier New', monospace;
+    color: #4aff4a;
+  }
 
-.dev-header {
-  background: #111;
-  padding: 0 16px;
-  display: flex; align-items: center; justify-content: space-between;
-  border-bottom: 1px solid #1a1a1a;
-  flex-shrink: 0;
-  height: 44px;
-}
-.header-left { display: flex; gap: 8px; align-items: center; }
-.live-dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: #1a3a1a; box-shadow: 0 0 4px #0f0;
-  flex-shrink: 0;
-}
-.dev-label { font-size: 11px; color: #1a4a1a; letter-spacing: 1px; }
-.dev-center {
-  font-size: 12px; color: #1a3a1a; letter-spacing: 0.8px;
-  flex: 1; text-align: center;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  padding: 0 12px;
-}
-.header-right {
-  display: flex; align-items: center; gap: 10px;
-  flex-shrink: 0;
-}
+  /* ── STAGE: rotates the whole device 90° on portrait phones ──
+     We pretend the phone is in landscape: width = 100vh, height = 100vw. */
+  #stage {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+  }
+  #stage-rot {
+    width: 100vh;
+    height: 100vw;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(90deg);
+    display: grid;
+    place-items: center;
+    background:
+      radial-gradient(ellipse at 50% 50%, #0a0a0a 0%, #000 70%);
+  }
 
-#offset-input {
-  width: 52px;
-  background: transparent; border: none;
-  border-bottom: 1px solid #1a4a1a; outline: none;
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
-  color: #2a7a2a; text-align: center; padding: 4px 2px;
-  -webkit-appearance: none;
-}
-#offset-input:focus { color: #4aff4a; border-bottom-color: #4aff4a; }
+  /* On a real desktop (fine pointer + hover), skip the rotation and just
+     center horizontally. Phones — even if held in landscape — always
+     stay rotated, so the notch / dynamic island never sits on the
+     long edge of the device. The user holds the phone in portrait. */
+  @media (orientation: landscape) and (hover: hover) and (pointer: fine) {
+    #stage-rot {
+      width: 100vw;
+      height: 100vh;
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+  }
 
-#timer-btn {
-  font-size: 12px; color: #2a8a2a;
-  padding: 6px 10px;
-  border: 0.5px solid #1a4a1a;
-  border-radius: 3px; background: none;
-  letter-spacing: 0.5px;
-  min-width: 72px; text-align: center;
-  cursor: pointer;
-  -webkit-user-select: none;
-}
-#timer-btn.running { color: #4aff4a; border-color: #2a8a2a; }
+  /* ── DEVICE ──
+     Real cinema caption-display readers are wide, shallow bars.
+     The OUTER chassis is roughly 5.2 : 1 (front face).
+     The illuminated DOT-MATRIX area inside is about 4.6 : 1. */
+  :root {
+    --device-w: min(94vmax, 920px);
+    --device-h: calc(var(--device-w) / 4.2);
+    --bezel: calc(var(--device-w) * 0.022);
+    --screen-pad-x: calc(var(--device-w) * 0.028);
+    --screen-pad-y: calc(var(--device-w) * 0.014);
+  }
 
-#cc-display {
-  flex: 1;
-  padding: 16px 20px;
-  display: flex; flex-direction: column;
-  justify-content: center; gap: 8px;
-  overflow: hidden;
-}
+  .device {
+    width: var(--device-w);
+    height: var(--device-h);
+    position: relative;
+    background:
+      linear-gradient(180deg, #1a1a1a 0%, #0e0e0e 50%, #050505 100%);
+    border-radius: calc(var(--device-w) * 0.012);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.06),
+      inset 0 -1px 0 rgba(0,0,0,0.8),
+      0 0 0 1px #0a0a0a,
+      0 calc(var(--device-w) * 0.012) calc(var(--device-w) * 0.04) rgba(0,0,0,0.9);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    padding: var(--bezel);
+    gap: var(--bezel);
+  }
 
-.cc-line {
-  font-size: clamp(15px, 3vw, 22px);
-  line-height: 1.5;
-  min-height: 1.5em;
-  letter-spacing: 0.3px;
-}
+  /* tiny manufacturer mark engraved into chassis (left cap) */
+  .chassis-cap {
+    width: calc(var(--device-w) * 0.07);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: calc(var(--device-w) * 0.006) 0;
+    color: #2a2a2a;
+    font-size: calc(var(--device-w) * 0.012);
+    letter-spacing: 0.18em;
+  }
+  .chassis-cap.right { align-items: center; }
+  .chassis-cap .stud {
+    width: calc(var(--device-w) * 0.008);
+    height: calc(var(--device-w) * 0.008);
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #444, #0a0a0a 80%);
+    box-shadow: inset 0 0 1px #000;
+  }
+  .chassis-cap .stack {
+    display: flex; flex-direction: column; gap: calc(var(--device-w) * 0.004);
+    align-items: center; line-height: 1;
+  }
+  .chassis-cap .mono { font-family: 'VT323','Courier New',monospace; }
+  .chassis-cap .small { font-size: calc(var(--device-w) * 0.009); color: #1f1f1f; }
 
-.dev-footer {
-  background: #0a0a0a;
-  padding: 5px 16px 10px;
-  display: flex; justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0;
-  border-top: 1px solid #0f0f0f;
-}
-.dev-footer span { font-size: 9px; color: #0f2a0f; letter-spacing: 0.5px; }
+  /* indicator LEDs row above the screen, like real units */
+  .leds {
+    position: absolute;
+    top: calc(var(--bezel) * 0.55);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: calc(var(--device-w) * 0.014);
+    align-items: center;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .led {
+    display: flex; align-items: center; gap: calc(var(--device-w) * 0.005);
+    font-size: calc(var(--device-w) * 0.011);
+    color: #2a2a2a;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .led .dot {
+    width: calc(var(--device-w) * 0.008);
+    height: calc(var(--device-w) * 0.008);
+    border-radius: 50%;
+    background: #0a0a0a;
+    box-shadow: inset 0 0 1px #000;
+  }
+  .led.on.green .dot { background:#3aff3a; box-shadow: 0 0 6px #3aff3a, inset 0 0 1px #051; }
+  .led.on.amber .dot { background:#ffb540; box-shadow: 0 0 5px #ffb540; }
+  .led.on.red   .dot { background:#ff3a3a; box-shadow: 0 0 5px #ff3a3a; }
+  .led.on.green span { color: #3aff3a; }
+  .led.on.amber span { color: #ffb540; }
+  .led.on.red span   { color: #ff5a5a; }
 
-#loading {
-  position: fixed; inset: 0; background: #0a0a0a;
-  display: flex; align-items: center; justify-content: center;
-  z-index: 300;
-}
-#loading span { font-size: 10px; color: #1a4a1a; letter-spacing: 2px; }
-#loading.hidden { display: none; }
+  /* ── SCREEN (the dot-matrix area) ── */
+  .screen {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    background: #050505;
+    border-radius: calc(var(--device-w) * 0.004);
+    box-shadow:
+      inset 0 0 0 1px #000,
+      inset 0 0 calc(var(--device-w) * 0.02) rgba(0,0,0,0.9);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  /* faint dot-matrix grid overlay so the captions feel like LED segments */
+  .screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(rgba(74,255,74,0.05) 0.6px, transparent 0.7px);
+    background-size: calc(var(--device-w) * 0.006) calc(var(--device-w) * 0.006);
+    pointer-events: none;
+    z-index: 1;
+  }
+  /* subtle glass/scanline */
+  .screen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.04), transparent 30%, transparent 70%, rgba(0,0,0,0.5)),
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 3px);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 2;
+  }
 
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.1} }
-.typing-cursor { animation: blink 0.8s infinite; }
+  /* status strip across the top of the screen */
+  .screen-head {
+    position: relative; z-index: 3;
+    flex: 0 0 auto;
+    padding: calc(var(--screen-pad-y) * 0.9) var(--screen-pad-x) calc(var(--screen-pad-y) * 0.4);
+    display: flex; justify-content: space-between; align-items: center;
+    color: #1f5a1f;
+    font-size: calc(var(--device-w) * 0.014);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    border-bottom: 1px solid #0c1a0c;
+    white-space: nowrap;
+  }
+  .screen-head .left, .screen-head .right { display: flex; gap: calc(var(--device-w) * 0.018); align-items: center; }
+  .screen-head .live { color: #3aff3a; text-shadow: 0 0 4px rgba(58,255,58,0.5); }
+  .screen-head .pulse {
+    width: calc(var(--device-w) * 0.008); height: calc(var(--device-w) * 0.008);
+    border-radius: 50%;
+    background: #3aff3a; box-shadow: 0 0 5px #3aff3a;
+    animation: pulse 1.6s ease-in-out infinite;
+    display: inline-block; margin-right: calc(var(--device-w) * 0.005);
+    vertical-align: middle;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+  /* the three caption lines */
+  .lines {
+    position: relative; z-index: 3;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: calc(var(--device-w) * 0.004);
+    padding: calc(var(--screen-pad-y) * 0.6) var(--screen-pad-x) calc(var(--screen-pad-y) * 0.4);
+    overflow: hidden;
+  }
+  .cc-line {
+    font-family: 'VT323','Courier New',monospace;
+    font-size: calc(var(--device-w) * 0.044);
+    line-height: 1.1;
+    min-height: 1.1em;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cc-line.l1 { color: #1e5a1e; }
+  .cc-line.l2 { color: #2f9a2f; }
+  .cc-line.l3 {
+    color: #4aff4a;
+    text-shadow: 0 0 6px rgba(74,255,74,0.45), 0 0 14px rgba(74,255,74,0.15);
+  }
+  .caret {
+    display: inline-block;
+    width: 0.55ch;
+    background: currentColor;
+    color: #4aff4a;
+    height: 0.9em;
+    margin-left: 0.15ch;
+    vertical-align: -0.05em;
+    animation: blink 0.7s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* footer strip */
+  .screen-foot {
+    position: relative; z-index: 3;
+    flex: 0 0 auto;
+    padding: calc(var(--screen-pad-y) * 0.35) var(--screen-pad-x) calc(var(--screen-pad-y) * 0.55);
+    display: flex; justify-content: space-between; align-items: center;
+    gap: calc(var(--device-w) * 0.012);
+    color: #0f3a0f;
+    font-size: calc(var(--device-w) * 0.012);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    border-top: 1px solid #0c1a0c;
+    white-space: nowrap;
+  }
+  .screen-foot .mid { color: #1f5a1f; letter-spacing: 0.3em; }
+  .ctrls {
+    display: flex; gap: calc(var(--device-w) * 0.006);
+    align-items: center;
+  }
+  .btn {
+    font-family: 'VT323','Courier New',monospace;
+    font-size: calc(var(--device-w) * 0.016);
+    letter-spacing: 0.12em;
+    color: #2f9a2f;
+    background: #061106;
+    border: 1px solid #0f2a0f;
+    border-radius: calc(var(--device-w) * 0.003);
+    padding: calc(var(--device-w) * 0.004) calc(var(--device-w) * 0.01);
+    cursor: pointer;
+    user-select: none;
+    line-height: 1;
+    box-shadow: inset 0 1px 0 rgba(74,255,74,0.04), 0 1px 0 rgba(0,0,0,0.6);
+    transition: color 0.1s, background 0.1s, box-shadow 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:hover { color: #4aff4a; border-color: #1a4a1a; }
+  .btn:active {
+    color: #cfffcf;
+    background: #0a1f0a;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
+  }
+  .btn.primary { color: #4aff4a; border-color: #1f5a1f; }
+  .btn.primary.paused { color: #ffb540; border-color: #5a3f10; }
+  .clock-wrap { display: inline-flex; align-items: center; gap: 0.4em; }
+  #cc-clock {
+    cursor: pointer;
+    border-bottom: 1px dotted transparent;
+  }
+  #cc-clock:hover { border-bottom-color: #1f5a1f; color: #4aff4a; }
+  #clock-input {
+    font-family: 'VT323','Courier New',monospace;
+    font-size: calc(var(--device-w) * 0.014);
+    letter-spacing: 0.2em;
+    color: #4aff4a;
+    background: #061106;
+    border: 1px solid #1f5a1f;
+    outline: none;
+    width: calc(var(--device-w) * 0.07);
+    text-align: center;
+    padding: 1px 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── LOADING / ERROR ── */
+  #loading {
+    position: fixed; inset: 0; background: #000;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 300;
+    font-family: 'VT323','Courier New',monospace;
+  }
+  #loading span {
+    font-size: 14px; color: #2a7a2a; letter-spacing: 4px;
+    animation: blink 1s steps(1) infinite;
+  }
+  #loading.hidden { display: none; }
+
+  /* hint to rotate (only shown if actually portrait orientation chosen) */
+  .hint { display: none; }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<div id="loading">
-  <span id="loading-text">LOADING</span>
+<div id="loading"><span id="loading-text">SEANCE · CC · LOADING</span></div>
+
+<div id="stage">
+  <div id="stage-rot">
+    <div class="device" id="device" style="visibility:hidden;">
+      <!-- LEFT cap -->
+      <div class="chassis-cap">
+        <div class="stud"></div>
+        <div class="stack mono">
+          <span class="small">ECD</span>
+          <span class="small">·</span>
+          <span class="small">001</span>
+        </div>
+        <div class="stud"></div>
+      </div>
+
+      <!-- SCREEN -->
+      <div class="screen">
+        <div class="leds">
+          <div class="led on green"><span class="dot"></span><span>LIVE</span></div>
+          <div class="led on amber"><span class="dot"></span><span>SYNC</span></div>
+          <div class="led"><span class="dot"></span><span>REC</span></div>
+        </div>
+
+        <div class="screen-head">
+          <div class="left">
+            <span><span class="pulse"></span><span class="live">CC</span></span>
+            <span id="film-label">SEANCE</span>
+          </div>
+          <div class="right">
+            <span class="clock-wrap">
+              <span id="cc-clock" title="tap to set">00:00</span>
+              <input id="clock-input" type="text" inputmode="numeric" pattern="[0-9:]*" maxlength="7" style="display:none;" />
+            </span>
+            <span>EIA-608</span>
+          </div>
+        </div>
+
+        <div class="lines">
+          <div class="cc-line l1" id="line1"></div>
+          <div class="cc-line l2" id="line2"></div>
+          <div class="cc-line l3" id="line3"></div>
+        </div>
+
+        <div class="screen-foot">
+          <div class="ctrls" id="ctrls-left">
+            <button class="btn" id="btn-back10" title="−10s">−10</button>
+            <button class="btn" id="btn-back1"  title="−1s">−1</button>
+            <button class="btn primary" id="btn-play" title="play / pause">⏸</button>
+            <button class="btn" id="btn-fwd1"  title="+1s">+1</button>
+            <button class="btn" id="btn-fwd10" title="+10s">+10</button>
+          </div>
+          <span class="mid" id="status-mid">STANDBY</span>
+          <div class="ctrls" id="ctrls-right">
+            <span id="next-cue">NEXT —</span>
+            <button class="btn" id="btn-set" title="set time">SET</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT cap -->
+      <div class="chassis-cap right">
+        <div class="stud"></div>
+        <div class="stack mono">
+          <span class="small">SN</span>
+          <span class="small">·</span>
+          <span class="small" id="sn-tag">A07</span>
+        </div>
+        <div class="stud"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div id="device" style="display:none;">
-  <div class="dev-header">
-    <div class="header-left">
-      <div class="live-dot"></div>
-      <span class="dev-label">CC LIVE</span>
-    </div>
-    <span class="dev-center" id="film-label">CAPTION DEVICE</span>
-    <div class="header-right">
-      <input id="offset-input" type="text" value="0:00" inputmode="decimal" placeholder="0:00" />
-      <div id="timer-btn" onclick="toggleTimer()">[ RUN ]</div>
-    </div>
-  </div>
-
-  <div id="cc-display">
-    <div class="cc-line" id="line0" style="color:#2a5a2a;"></div>
-    <div class="cc-line" id="line1" style="color:#3a8a3a;"></div>
-    <div class="cc-line" id="line2" style="color:#4aff4a;text-shadow:0 0 10px rgba(74,255,74,0.2);"></div>
-  </div>
-
-  <div class="dev-footer">
-    <span>ECD · SEANCE</span>
-    <span id="next-cue">NEXT --:--</span>
-    <span>EIA-608</span>
-  </div>
-</div>
+<div class="hint">ROTATE · 横屏观看</div>
 
 <script>
+/* ────────────────────────────────────────────────────────────────
+   ECD · SEANCE — Caption Device
+   Auto-plays a JSON cue list. No user input required.
+   URL params:
+     ?film=NAME       loads /films/NAME.json from the repo
+     ?autostart=0     do not auto-start the timer (default: 1)
+     ?at=SECONDS      start offset in seconds (default: 0)
+   ──────────────────────────────────────────────────────────────── */
+
 const REPO = 'https://raw.githubusercontent.com/fewwwest/seance/main';
+
 const lineEls = [
-  document.getElementById('line0'),
   document.getElementById('line1'),
   document.getElementById('line2'),
+  document.getElementById('line3'),
 ];
-const COLORS = ['#2a5a2a', '#3a8a3a', '#4aff4a'];
-const SHADOWS = ['none', 'none', '0 0 10px rgba(74,255,74,0.2)'];
+const COLOR_CLASSES = ['l1','l2','l3'];
 
-let movieConfig = null, pendingCues = [];
-let running = false, offsetSecs = 0, timerStart = null, timerInterval = null;
-const lineBuf = ['', '', ''];
+let movieConfig = null;
+let pendingCues = [];
+let lines = [];
+let running = false;
+let offsetSecs = 0;
+let timerStart = null;
+let timerInterval = null;
+let typing = false;
 
 async function init() {
   const params = new URLSearchParams(location.search);
   const film = params.get('film');
-  if (!film) { document.getElementById('loading-text').textContent = 'NO FILM'; return; }
+  const autostart = params.get('autostart') !== '0';
+  offsetSecs = parseFloat(params.get('at') || '0') || 0;
+
+  // demo fallback
+  const demo = {
+    title: 'SEANCE · DEMO',
+    eiri: [
+      { at: 1.5, line: '· · · 信号建立 · · ·' },
+      { at: 4,   line: '欢迎来到放映现场。' },
+      { at: 7,   line: '请保持沉默，等待入场。' },
+      { at: 11,  line: '幕布升起。' },
+      { at: 15,  line: '影片开始。' },
+      { at: 20,  line: '——' },
+      { at: 24,  line: '"我从来不相信巧合。"' },
+      { at: 30,  line: '"那你相信什么？"' },
+      { at: 35,  line: '"……回声。"' },
+    ]
+  };
+
+  if (!film) {
+    movieConfig = demo;
+    boot(autostart);
+    return;
+  }
+
   try {
     const res = await fetch(REPO + '/films/' + film + '.json');
-    if (!res.ok) throw new Error();
+    if (!res.ok) throw new Error('not found');
     movieConfig = await res.json();
-    pendingCues = [...(movieConfig.eiri||[])].sort((a,b) => a.at - b.at);
-    document.getElementById('film-label').textContent = movieConfig.title || 'CAPTION DEVICE';
-    document.getElementById('loading').classList.add('hidden');
-    document.getElementById('device').style.display = 'flex';
-    updateDisplay();
-  } catch(e) {
-    document.getElementById('loading-text').textContent = 'NOT FOUND';
+    boot(autostart);
+  } catch (e) {
+    document.getElementById('loading-text').textContent = 'FILM NOT FOUND';
   }
 }
 
-function parseTime(s) {
-  const p = s.trim().split(':');
-  return p.length === 2 ? (parseInt(p[0])||0)*60 + (parseInt(p[1])||0) : parseInt(s)||0;
+function boot(autostart) {
+  pendingCues = [...(movieConfig.eiri || [])].sort((a,b) => a.at - b.at);
+  document.getElementById('film-label').textContent =
+    (movieConfig.title || 'CAPTION DEVICE').toUpperCase();
+  document.getElementById('loading').classList.add('hidden');
+  const dev = document.getElementById('device');
+  dev.style.visibility = 'visible';
+  wireControls();
+  // pause-state visuals on boot
+  document.getElementById('btn-play').textContent = '▶';
+  document.getElementById('btn-play').classList.add('paused');
+  updateClock();
+  if (autostart) startTimer();
 }
-function formatTime(s) {
-  s = Math.max(0, s);
-  return Math.floor(s/60) + ':' + (Math.floor(s%60) < 10 ? '0' : '') + Math.floor(s%60);
+
+function startTimer() {
+  if (running) return;
+  timerStart = Date.now();
+  running = true;
+  document.getElementById('status-mid').textContent = 'PLAYING';
+  document.getElementById('btn-play').textContent = '⏸';
+  document.getElementById('btn-play').classList.remove('paused');
+  if (!timerInterval) timerInterval = setInterval(tick, 200);
+  tick();
 }
+
+function pauseTimer() {
+  if (!running) return;
+  offsetSecs = currentSecs();
+  running = false;
+  document.getElementById('status-mid').textContent = 'PAUSED';
+  document.getElementById('btn-play').textContent = '▶';
+  document.getElementById('btn-play').classList.add('paused');
+  tick();
+}
+
+function togglePlay() {
+  running ? pauseTimer() : startTimer();
+}
+
+function nudge(delta) {
+  const wasRunning = running;
+  if (wasRunning) {
+    offsetSecs = currentSecs();
+    timerStart = Date.now();
+  }
+  offsetSecs = Math.max(0, offsetSecs + delta);
+  // re-queue any cues we now overshot or undershot
+  rebuildPendingCues();
+  tick();
+}
+
+function setTimeTo(secs) {
+  offsetSecs = Math.max(0, secs);
+  if (running) timerStart = Date.now();
+  rebuildPendingCues();
+  tick();
+}
+
+function rebuildPendingCues() {
+  // restore the full cue list and drop everything already in the past
+  const all = [...(movieConfig.eiri || [])].sort((a,b) => a.at - b.at);
+  const now = currentSecs();
+  pendingCues = all.filter(c => c.at > now);
+}
+
+function parseTimeInput(s) {
+  s = (s || '').trim();
+  if (!s) return null;
+  // formats: SS, MM:SS, H:MM:SS
+  const parts = s.split(':').map(p => parseInt(p, 10));
+  if (parts.some(isNaN)) return null;
+  if (parts.length === 1) return parts[0];
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  return null;
+}
+
+function wireControls() {
+  document.getElementById('btn-play').addEventListener('click', togglePlay);
+  document.getElementById('btn-back10').addEventListener('click', () => nudge(-10));
+  document.getElementById('btn-back1').addEventListener('click', () => nudge(-1));
+  document.getElementById('btn-fwd1').addEventListener('click', () => nudge(1));
+  document.getElementById('btn-fwd10').addEventListener('click', () => nudge(10));
+  document.getElementById('btn-set').addEventListener('click', openClockEdit);
+  document.getElementById('cc-clock').addEventListener('click', openClockEdit);
+
+  const inp = document.getElementById('clock-input');
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') commitClockEdit();
+    else if (e.key === 'Escape') cancelClockEdit();
+  });
+  inp.addEventListener('blur', commitClockEdit);
+
+  // keyboard shortcuts: space = play/pause, ← → = ±1, shift+←/→ = ±10
+  document.addEventListener('keydown', e => {
+    if (document.activeElement === inp) return;
+    if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+    else if (e.key === 'ArrowLeft')  nudge(e.shiftKey ? -10 : -1);
+    else if (e.key === 'ArrowRight') nudge(e.shiftKey ?  10 :  1);
+  });
+}
+
+function openClockEdit() {
+  const inp = document.getElementById('clock-input');
+  const clk = document.getElementById('cc-clock');
+  inp.value = formatTime(currentSecs());
+  clk.style.display = 'none';
+  inp.style.display = 'inline-block';
+  inp.focus();
+  inp.select();
+}
+
+function commitClockEdit() {
+  const inp = document.getElementById('clock-input');
+  const clk = document.getElementById('cc-clock');
+  if (inp.style.display === 'none') return;
+  const v = parseTimeInput(inp.value);
+  if (v != null) setTimeTo(v);
+  inp.style.display = 'none';
+  clk.style.display = '';
+}
+
+function cancelClockEdit() {
+  document.getElementById('clock-input').style.display = 'none';
+  document.getElementById('cc-clock').style.display = '';
+}
+
+function tick() {
+  updateClock();
+  checkCues();
+}
+
 function currentSecs() {
   return running ? offsetSecs + (Date.now() - timerStart) / 1000 : offsetSecs;
 }
 
-function updateDisplay() {
-  const btn = document.getElementById('timer-btn');
-  const t = formatTime(currentSecs());
-  btn.textContent = running ? '[ ' + t + ' ]' : '[ RUN ]';
-  btn.className = running ? 'running' : '';
-  checkCues();
-  const next = pendingCues[0];
-  document.getElementById('next-cue').textContent = next ? 'NEXT ' + formatTime(next.at) : 'NEXT --:--';
+function formatTime(s) {
+  s = Math.max(0, Math.floor(s));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const ss = s % 60;
+  const pad = n => (n < 10 ? '0' : '') + n;
+  return h > 0 ? h + ':' + pad(m) + ':' + pad(ss) : pad(m) + ':' + pad(ss);
 }
 
-function toggleTimer() {
-  if (!running) {
-    offsetSecs = parseTime(document.getElementById('offset-input').value);
-    timerStart = Date.now(); running = true;
-    timerInterval = setInterval(updateDisplay, 500);
-  } else {
-    offsetSecs = currentSecs(); running = false;
-    clearInterval(timerInterval);
-    document.getElementById('offset-input').value = formatTime(offsetSecs);
+function updateClock() {
+  // don't overwrite while user is editing
+  const inp = document.getElementById('clock-input');
+  if (!inp || inp.style.display === 'none') {
+    document.getElementById('cc-clock').textContent = formatTime(currentSecs());
   }
-  updateDisplay();
+  const next = pendingCues[0];
+  document.getElementById('next-cue').textContent =
+    next ? 'NEXT ' + formatTime(next.at) : 'END';
 }
-
-const oi = document.getElementById('offset-input');
-oi.addEventListener('blur', () => {
-  offsetSecs = parseTime(oi.value);
-  oi.value = formatTime(offsetSecs);
-  updateDisplay();
-});
 
 function checkCues() {
-  if (!pendingCues.length) return;
+  if (typing) return;
   const now = currentSecs();
-  pendingCues.filter(c => c.at <= now).forEach(c => {
-    pendingCues = pendingCues.filter(x => x !== c);
-    showCue(c.line);
-  });
+  const due = pendingCues.filter(c => c.at <= now);
+  if (!due.length) return;
+  // pop them all in order, but type one at a time
+  const next = due[0];
+  pendingCues = pendingCues.filter(x => x !== next);
+  showCue(next.line);
 }
 
 function showCue(text) {
-  lineEls[2].textContent = '|';
-  lineEls[2].className = 'cc-line typing-cursor';
-  setTimeout(() => {
-    lineEls[2].className = 'cc-line';
-    lineBuf.shift(); lineBuf.push(text);
-    render();
-  }, 500);
+  // shift current bottom line up the stack and type new one into the bottom
+  typing = true;
+  // shift up: l3 -> l2, l2 -> l1
+  if (lines.length === 3) lines.shift();
+  lines.push(''); // new empty line at bottom
+  render();
+
+  // type into bottom
+  let i = 0;
+  const targetEl = lineEls[2];
+  targetEl.classList.add('l3');
+
+  function step() {
+    if (i <= text.length) {
+      const partial = text.slice(0, i);
+      targetEl.innerHTML = escapeHTML(partial) + '<span class="caret"></span>';
+      i++;
+      // typing speed: faster for long lines
+      const delay = 28 + Math.random() * 35;
+      setTimeout(step, delay);
+    } else {
+      targetEl.innerHTML = escapeHTML(text);
+      lines[lines.length - 1] = text;
+      typing = false;
+      // immediately catch up if more cues are already due
+      checkCues();
+    }
+  }
+  step();
+}
+
+function escapeHTML(s) {
+  return s.replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
 }
 
 function render() {
-  lineEls.forEach((el, i) => {
-    el.textContent = lineBuf[i] || '';
-    el.style.color = COLORS[i];
-    el.style.textShadow = SHADOWS[i];
-    el.className = 'cc-line';
-  });
+  for (let i = 0; i < 3; i++) {
+    const el = lineEls[i];
+    el.textContent = lines[i] || '';
+    el.className = 'cc-line ' + COLOR_CLASSES[i];
+  }
 }
 
 init();
