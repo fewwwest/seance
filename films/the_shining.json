@@ -4,15 +4,138 @@
   "year": 1980,
   "duration": 144,
   "eiri": [
-    { "at": 390, "line": "The manager is talking. Jack isn't listening." },
-    { "at": 1260, "line": "The corridor starts here." },
-    { "at": 2880, "line": "Camera on the floor." },
-    { "at": 4200, "line": "237." },
-    { "at": 4692, "line": "This song arrives before everything else does." },
-    { "at": 5023, "line": "Steadicam." },
-    { "at": 5769, "line": "She's on her own." },
-    { "at": 5783, "line": "Road Runner." },
-    { "at": 7527, "line": ["Penderecki, De Natura Sonoris No.2.", "No words. The voices are the instrument."] },
-    { "at": 7800, "line": "1921. He's standing in the center." }
+    {
+      "at": 95,
+      "line": "Bartók's Music for Strings, Percussion and Celesta. Kubrick used it in 2001 too. He found something in it that keeps working."
+    },
+    {
+      "at": 390,
+      "line": [
+        "The manager is talking.",
+        "Jack isn't listening. His eyes are somewhere else the whole time."
+      ]
+    },
+    {
+      "at": 620,
+      "line": [
+        "Steadicam was new in 1980. Garrett Brown invented it.",
+        "That floating quality isn't supernatural — it's mechanical."
+      ]
+    },
+    {
+      "at": 960,
+      "line": "Mr. Orange is lying in the blood. He's there for the whole film."
+    },
+    {
+      "at": 1260,
+      "line": [
+        "The carpet pattern is a Navajo design.",
+        "Kubrick had it custom-made. It doesn't match any real Overlook."
+      ]
+    },
+    {
+      "at": 1560,
+      "line": [
+        "Danny's tricycle routes were mapped obsessively.",
+        "The Steadicam follows at floor level — his height, not ours."
+      ]
+    },
+    {
+      "at": 2040,
+      "line": [
+        "Room 217 in the novel.",
+        "Kubrick changed it to 237 because the Timberline Lodge actually had a room 217 and didn't want guests to avoid it."
+      ]
+    },
+    {
+      "at": 2400,
+      "line": [
+        "237.",
+        "The moon is 237,000 miles from Earth.",
+        "Kubrick probably didn't intend that. He probably did."
+      ]
+    },
+    {
+      "at": 2880,
+      "line": [
+        "The hedge maze didn't exist in the original hotel.",
+        "Kubrick replaced the topiary animals from the novel — he thought moving bushes would look ridiculous."
+      ]
+    },
+    {
+      "at": 3300,
+      "line": [
+        "Shelley Duvall filmed the baseball bat scene 127 times.",
+        "She had a breakdown during production.",
+        "Kubrick documented it."
+      ]
+    },
+    {
+      "at": 3720,
+      "line": "Wendy is reading The Catcher in the Rye while Jack types. He's writing. She's reading about someone else's unraveling."
+    },
+    {
+      "at": 4200,
+      "line": [
+        "Midnight, the Stars and You. Ray Noble, 1934.",
+        "Playing in the Gold Room, which shouldn't exist.",
+        "The song predates the hotel."
+      ]
+    },
+    {
+      "at": 4692,
+      "line": "The Gold Room bar is always fully stocked and always empty. Lloyd appears before anyone opens the door."
+    },
+    {
+      "at": 5023,
+      "line": [
+        "Here and there the camera can't possibly be where it is.",
+        "A window appears in a room that shouldn't have one.",
+        "Kubrick left them in."
+      ]
+    },
+    {
+      "at": 5400,
+      "line": [
+        "Penderecki, De Natura Sonoris No. 2.",
+        "The voices aren't singing words — they're functioning as texture.",
+        "The choir is the room itself."
+      ]
+    },
+    {
+      "at": 5769,
+      "line": [
+        "Wendy never goes looking for what Jack is writing. She waits.",
+        "Then she sees it.",
+        "That's the whole marriage."
+      ]
+    },
+    {
+      "at": 5960,
+      "line": [
+        "All work and no play makes Jack a dull boy.",
+        "Every line formatted differently — different margins, different spacing."
+      ]
+    },
+    {
+      "at": 6300,
+      "line": [
+        "The blood from the elevator was vegetable-based.",
+        "Kubrick tested nine different shades.",
+        "The set had to be fully cleaned between takes. That shot took a year."
+      ]
+    },
+    {
+      "at": 7200,
+      "line": "Here's Johnny was improvised. Nicholson remembered Ed McMahon's line from The Tonight Show. Kubrick kept it."
+    },
+    {
+      "at": 7527,
+      "line": [
+        "July 4th, 1921.",
+        "He's standing in the center.",
+        "He's always been the caretaker."
+      ]
+    }
   ]
 }

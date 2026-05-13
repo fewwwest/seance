@@ -4,15 +4,107 @@
   "year": 1992,
   "duration": 99,
   "eiri": [
-    { "at": 180, "line": "He spent the whole breakfast explaining why he doesn't tip. That's the opening statement." },
-    { "at": 420, "line": "Slow walk. Little Green Bag. Tarantino knew this would be remembered." },
-    { "at": 960, "line": "Mr. Orange is lying in the blood. He stays there for the whole film." },
-    { "at": 1800, "line": ["The ear scene.", "The music doesn't stop."] },
-    { "at": 2580, "line": "Stuck in the Middle with You became a different song after this." },
-    { "at": 3120, "line": "Everyone is using a fake name. Everyone knows who everyone else is." },
-    { "at": 4200, "line": "When he talks about the Madonna song, he's already talking about this film." },
-    { "at": 5100, "line": "Three guns pointing in three directions. Nobody can win." },
-    { "at": 5640, "line": "What Mr. Orange says." },
-    { "at": 5820, "line": "The ending happens in the corridor. Not in the warehouse." }
+    {
+      "at": 180,
+      "line": [
+        "He spent the whole breakfast explaining why he doesn't tip.",
+        "That's the opening statement."
+      ]
+    },
+    {
+      "at": 420,
+      "line": [
+        "Slow walk. Little Green Bag by George Baker Selection, 1969.",
+        "Tarantino licensed it for $5,000.",
+        "He knew exactly what it would do."
+      ]
+    },
+    {
+      "at": 780,
+      "line": "The film has no heist scene. The robbery happens entirely off-screen. Everything we see is before and after."
+    },
+    {
+      "at": 960,
+      "line": [
+        "Mr. Orange is lying in the blood.",
+        "He stays there for the whole film.",
+        "Everything else happens around him."
+      ]
+    },
+    {
+      "at": 1440,
+      "line": [
+        "The warehouse is a real location — a mortuary in Los Angeles.",
+        "Tarantino didn't tell the actors until they arrived."
+      ]
+    },
+    {
+      "at": 1800,
+      "line": [
+        "Stuck in the Middle with You. Stealers Wheel, 1972.",
+        "Gerry Rafferty wrote it as a parody of Dylan.",
+        "After this scene it became something else entirely."
+      ]
+    },
+    {
+      "at": 2160,
+      "line": "Michael Madsen improvised most of the dance. He said he just felt like moving."
+    },
+    {
+      "at": 2580,
+      "line": [
+        "The ear is never shown.",
+        "Tarantino cuts away at exactly the right moment.",
+        "What you imagine is worse than anything he could have filmed."
+      ]
+    },
+    {
+      "at": 3120,
+      "line": [
+        "Every man has a color alias. Nobody uses their real name.",
+        "Mr. White knows Mr. Orange's real name.",
+        "That's the whole problem."
+      ]
+    },
+    {
+      "at": 3600,
+      "line": "Harvey Keitel produced the film and played Mr. White. He came on board after reading the first scene — the Madonna speech."
+    },
+    {
+      "at": 4200,
+      "line": [
+        "Like a Virgin is about a girl who felt like a virgin again after being with a well-endowed man.",
+        "Joe says she's talking about a heartfelt feeling.",
+        "They're both right. That's the point."
+      ]
+    },
+    {
+      "at": 4680,
+      "line": [
+        "The Mexican standoff has three guns pointing in three directions.",
+        "Nobody can fire without dying.",
+        "Tarantino would come back to this shape again and again."
+      ]
+    },
+    {
+      "at": 5040,
+      "line": "Tim Roth rehearsed the undercover cop story for a month before filming. He performed it for the crew as a kind of audition. Tarantino then shot it three ways."
+    },
+    {
+      "at": 5400,
+      "line": [
+        "Mr. Orange says his name.",
+        "He's been bleeding the whole film to protect a lie.",
+        "He tells the truth at the moment it no longer matters."
+      ]
+    },
+    {
+      "at": 5700,
+      "line": [
+        "The ending happens before we see it.",
+        "Mr. Pink is still running when the film cuts out.",
+        "We never find out if he made it."
+      ]
+    }
   ]
 }
